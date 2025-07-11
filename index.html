@@ -141,20 +141,6 @@
     const previewDiv = document.getElementById('preview');
     const errorDiv = document.getElementById('error');
 
-    // Helper to render preview table
-    function renderPreview(rows) {
-      if (!rows || rows.length === 0) {
-        previewDiv.innerHTML = '<div style="margin-top:24px;color:#8a8ca3;">No data to preview.</div>';
-        return;
-      }
-      const columns = Object.keys(rows[0]);
-      let html = '<div style="overflow-x:auto;margin-top:32px;"><table style="border-collapse:collapse;width:100%;max-width:100%;background:#f8f9fa;border-radius:8px;overflow:hidden;">';
-      html += '<thead><tr>' + columns.map(col => `<th style=\"padding:8px 12px;border-bottom:2px solid #b5c3f0;text-align:left;font-weight:600;color:#2563eb;background:#f0f4ff;\">${col}</th>`).join('') + '</tr></thead>';
-      html += '<tbody>' + rows.map(row => '<tr>' + columns.map(col => `<td style=\"padding:8px 12px;border-bottom:1px solid #e0e7ef;\">${row[col]}</td>`).join('') + '</tr>').join('') + '</tbody>';
-      html += '</table></div>';
-      previewDiv.innerHTML = html;
-    }
-
     // AJAX upload
     function uploadFile(file) {
       const formData = new FormData();
@@ -170,7 +156,7 @@
         if (data.error) {
           errorDiv.textContent = data.error;
         } else {
-          renderPreview(data.preview);
+          previewDiv.innerHTML = '';
         }
       })
       .catch(() => {
