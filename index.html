@@ -250,8 +250,13 @@
         .then(res => res.json())
         .then(data => {
           if (data.error) {
-            sectorError.textContent = data.error;
-            sectorResults.innerHTML = '';
+            if (data.error === 'Waiting for file upload.') {
+              sectorError.textContent = '';
+              sectorResults.innerHTML = '<div style="color:#8a8ca3;">Waiting for file upload...</div>';
+            } else {
+              sectorError.textContent = data.error;
+              sectorResults.innerHTML = '';
+            }
           } else {
             renderSectorCards(data.data);
           }

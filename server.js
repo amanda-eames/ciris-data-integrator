@@ -220,8 +220,13 @@ app.get('/api/cris_data_by_sector', (req, res) => {
   if (!sector) {
     return res.status(400).json({ error: 'Missing sector parameter.' });
   }
+  const fs = require('fs');
   const dataDir = path.join(__dirname, 'data');
   const dbPath = path.join(dataDir, 'mydb.duckdb');
+  // Check if the DuckDB file exists
+  if (!fs.existsSync(dbPath)) {
+    return res.status(404).json({ error: 'Waiting for file upload.' });
+  }
   const db = new DuckDB.Database(dbPath);
   const sql = `
     SELECT  gpc_reference_number,
