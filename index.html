@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload</title>
+  <style>
+    body {
+      background: #fafafa;
+      font-family: 'Inter', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 60px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+      padding: 48px 32px 56px 32px;
+    }
+    .title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #181818;
+      text-align: left;
+    }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #8a8ca3;
+      margin-bottom: 36px;
+      text-align: left;
+    }
+    .upload-area {
+      background: #fafbfc;
+      border: 2px dashed #b5c3f0;
+      border-radius: 12px;
+      padding: 48px 0 40px 0;
+      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 260px;
+      margin-bottom: 0;
+    }
+    .upload-area.dragover {
+      border-color: #2563eb;
+      background: #f0f4ff;
+    }
+    .upload-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .upload-icon svg {
+      width: 56px;
+      height: 56px;
+      color: #2563eb;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+      padding: 12px;
+    }
+    .upload-link {
+      color: #2563eb;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .upload-text {
+      font-size: 1.1rem;
+      color: #181818;
+      font-weight: 500;
+    }
+    .file-info {
+      color: #8a8ca3;
+      font-size: 1rem;
+      margin-top: 8px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .container {
+        padding: 18px 4px 32px 4px;
+      }
+      .upload-area {
+        padding: 32px 0 24px 0;
+        min-height: 180px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width:1200px;margin:40px auto 32px auto;background:#fff;border-radius:18px;box-shadow:0 2px 16px rgba(37,99,235,0.07);padding:28px 36px 32px 36px;">
+    <div class="title" style="font-size:2rem;font-weight:700;color:#181818;margin-bottom:10px;text-align:left;">Upload your CIRIS data file</div>
+    <div class="subtitle" style="font-size:1.1rem;color:#8a8ca3;margin-bottom:32px;text-align:left;">Upload your CIRIS file here and we will adjust your data to review and integrate</div>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+      <label for="fileInput" class="upload-area" id="uploadArea" style="min-height:110px;padding:24px 0 18px 0;background:#fafbfc;border:2px dashed #b5c3f0;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:border-color 0.2s,background 0.2s;">
+        <div class="upload-icon" style="margin-bottom:18px;">
+          <svg fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24" style="width:56px;height:56px;background:#fff;border-radius:50%;box-shadow:0 2px 8px rgba(37,99,235,0.08);padding:12px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M20 16.5A2.5 2.5 0 0017.5 14h-11A2.5 2.5 0 004 16.5v1A2.5 2.5 0 006.5 20h11a2.5 2.5 0 002.5-2.5v-1z"/>
+          </svg>
+        </div>
+        <span class="upload-link" id="uploadLink" style="color:#2563eb;font-weight:600;text-decoration:underline;cursor:pointer;font-size:1.1rem;">Click to upload</span>
+        <span class="upload-text" style="font-size:1.1rem;color:#181818;font-weight:500;"> or drag and drop file</span>
+        <div class="file-info" style="color:#8a8ca3;font-size:1rem;margin-top:8px;">CSV, JSON, or Excel (max 40MB)</div>
+        <input type="file" name="file" id="fileInput" accept=".csv,.json,.xlsx" required>
+      </label>
+    </form>
+    <div id="preview"></div>
+    <div id="error" style="color:#d32f2f; margin-top:16px;"></div>
+  </div>
+  <div id="sector-section" style="max-width:1200px;margin:40px auto 64px auto;background:#fff;border-radius:18px;box-shadow:0 2px 16px rgba(37,99,235,0.07);padding:40px 36px 48px 36px;overflow:hidden;">
+    <div class="title" style="font-size:2rem;font-weight:700;color:#181818;margin-bottom:10px;text-align:left;">Sector</div>
+    <div class="subtitle" style="font-size:1.1rem;color:#8a8ca3;margin-bottom:32px;text-align:left;">Select a sector to view all GPC reference numbers and their emissions data.</div>
+    <div style="margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+      <label for="sectorSelect" style="font-weight:600;color:#2563eb;">Sector:</label>
+      <select id="sectorSelect" style="padding:6px 12px;border:1px solid #b5c3f0;border-radius:6px;font-size:1rem;font-family:'Inter', Arial, sans-serif;">
+        <option value="Stationary energy">Stationary energy</option>
+        <option value="Transportation">Transportation</option>
+        <option value="Waste">Waste</option>
+        <option value="IPPU">IPPU</option>
+        <option value="AFOLU">AFOLU</option>
+      </select>
+      <button id="fetchSectorBtn" style="background:#2563eb;color:#fff;border:none;padding:7px 18px;border-radius:6px;font-weight:600;cursor:pointer;">Fetch</button>
+    </div>
+    <div id="sectorError" style="color:#d32f2f;margin-bottom:12px;"></div>
+    <div id="sectorResults"></div>
+  </div>
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadLink = document.getElementById('uploadLink');
+    const previewDiv = document.getElementById('preview');
+    const errorDiv = document.getElementById('error');
+
+    // Helper to render preview table
+    function renderPreview(rows) {
+      if (!rows || rows.length === 0) {
+        previewDiv.innerHTML = '<div style="margin-top:24px;color:#8a8ca3;">No data to preview.</div>';
+        return;
+      }
+      const columns = Object.keys(rows[0]);
+      let html = '<div style="overflow-x:auto;margin-top:32px;"><table style="border-collapse:collapse;width:100%;max-width:100%;background:#f8f9fa;border-radius:8px;overflow:hidden;">';
+      html += '<thead><tr>' + columns.map(col => `<th style=\"padding:8px 12px;border-bottom:2px solid #b5c3f0;text-align:left;font-weight:600;color:#2563eb;background:#f0f4ff;\">${col}</th>`).join('') + '</tr></thead>';
+      html += '<tbody>' + rows.map(row => '<tr>' + columns.map(col => `<td style=\"padding:8px 12px;border-bottom:1px solid #e0e7ef;\">${row[col]}</td>`).join('') + '</tr>').join('') + '</tbody>';
+      html += '</table></div>';
+      previewDiv.innerHTML = html;
+    }
+
+    // AJAX upload
+    function uploadFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      errorDiv.textContent = '';
+      previewDiv.innerHTML = '';
+      fetch('/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          errorDiv.textContent = data.error;
+        } else {
+          renderPreview(data.preview);
+        }
+      })
+      .catch(() => {
+        errorDiv.textContent = 'Upload failed.';
+      });
+    }
+
+    // Click to upload
+    uploadLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      fileInput.click();
+    });
+
+    // Drag and drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      uploadArea.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove('dragover');
+      });
+    });
+    uploadArea.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        uploadFile(e.dataTransfer.files[0]);
+      }
+    });
+    // Auto-upload on file select
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        uploadFile(fileInput.files[0]);
+      }
+    });
+    // Prevent default form submit
+    uploadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+    });
+
+    // Sector section logic
+    const sectorSelect = document.getElementById('sectorSelect');
+    const fetchSectorBtn = document.getElementById('fetchSectorBtn');
+    const sectorResults = document.getElementById('sectorResults');
+    const sectorError = document.getElementById('sectorError');
+
+    function renderSectorCards(rows) {
+      if (!rows || rows.length === 0) {
+        sectorResults.innerHTML = '<div style="color:#8a8ca3;">No data found for this sector.</div>';
+        return;
+      }
+      let html = '<div style=\"width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:40px;justify-items:center;padding:0 24px;box-sizing:border-box;\">';
+      rows.forEach(row => {
+        html += `
+          <div style=\"background:#fff;border:2px solid #d1d5db;border-radius:18px;box-shadow:0 4px 24px rgba(37,99,235,0.10);padding:28px 20px 28px 20px;width:100%;max-width:300px;height:370px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;font-family:'Inter', Arial, sans-serif;\">
+            <div style=\"width:100%;display:flex;flex-direction:column;\">
+              <div style=\"font-size:1.25rem;font-weight:800;color:#181818;margin-bottom:4px;\">${row.gpc_reference_number ?? ''}</div>
+              <div style=\"font-size:1.15rem;font-weight:800;color:#181818;margin-top:8px;margin-bottom:10px;line-height:1.3;\">${row.subsector ?? ''}</div>
+              <div style=\"font-size:0.98rem;color:#8a8ca3;margin-bottom:8px;\">${row.scope ?? ''}</div>
+              <div style=\"font-size:1.15rem;font-weight:700;color:#2563eb;margin-bottom:10px;\">Total Emission: <span style=\"font-size:1.25rem;font-weight:800;\">${row.total_emission_value ? Number(row.total_emission_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : ''}</span> <span style=\"font-size:1rem;font-weight:500;color:#8a8ca3;\">tonnes co2eq</span></div>
+              <div style=\"font-size:1rem;color:#8a8ca3;margin-bottom:10px;line-height:1.5;\">
+                CO2: <span style=\"color:#8a8ca3;font-weight:400;\">${row.co2 ? Number(row.co2).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</span> t<br/>
+                CH4: <span style=\"color:#8a8ca3;font-weight:400;\">${row.ch4 ? Number(row.ch4).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</span> t<br/>
+                N2O: <span style=\"color:#8a8ca3;font-weight:400;\">${row.n20 ? Number(row.n20).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</span> t
+              </div>
+              ${row.notation_key && row.notation_key !== 'null' ? `<div style=\"font-size:1rem;margin-bottom:4px;color:#8a8ca3;\">Notation Key: <span style=\"color:#8a8ca3;\">${row.notation_key}</span></div>` : ''}
+              <div style=\"font-size:1rem;margin-bottom:4px;color:#8a8ca3;\">Data Source: <span style=\"color:#8a8ca3;\">${row.datasources ?? ''}</span></div>
+            </div>
+            <button style="margin-top:auto;background:#2563eb;color:#fff;border:none;padding:10px 0;border-radius:6px;font-weight:700;cursor:pointer;width:100%;font-size:1rem;letter-spacing:0.01em;box-shadow:0 1px 4px rgba(37,99,235,0.08);">CONNECT DATA</button>
+          </div>
+        `;
+      });
+      html += '</div>';
+      sectorResults.innerHTML = html;
+    }
+
+    function fetchSectorData() {
+      const sector = sectorSelect.value;
+      if (!sector) {
+        sectorError.textContent = 'Please select a sector.';
+        sectorResults.innerHTML = '';
+        return;
+      }
+      sectorError.textContent = '';
+      sectorResults.innerHTML = '<div style="color:#8a8ca3;">Loading...</div>';
+      fetch(`/api/cris_data_by_sector?sector=${encodeURIComponent(sector)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            sectorError.textContent = data.error;
+            sectorResults.innerHTML = '';
+          } else {
+            renderSectorCards(data.data);
+          }
+        })
+        .catch(() => {
+          sectorError.textContent = 'Failed to fetch data.';
+          sectorResults.innerHTML = '';
+        });
+    }
+
+    fetchSectorBtn.addEventListener('click', fetchSectorData);
+    // Auto-fetch on page load for default sector
+    fetchSectorData();
+  </script>
+</body>
+</html> 
