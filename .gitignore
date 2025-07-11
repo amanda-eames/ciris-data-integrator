@@ -1,0 +1,19 @@
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# macOS system files
+.DS_Store
+
+# Local config
+*.local
+
+# App data
+uploads/*
+data/* 
